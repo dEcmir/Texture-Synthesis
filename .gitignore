@@ -1,0 +1,9 @@
+# [images]
+*.jpg
+*.png
+
+# [neural weights]
+*..pkl
+
+# [python cache]
+*.py~
