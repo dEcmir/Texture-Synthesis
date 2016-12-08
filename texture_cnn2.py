@@ -105,7 +105,7 @@ losses = []
 
 # style loss
 for i in FILTER_SIZES:
-    losses.append(1e7/length(FILTER_SIZES) * style_loss(art_features, gen_features, str(i)))
+    losses.append(1e7/len(FILTER_SIZES) * style_loss(art_features, gen_features, str(i)))
 
 
 # total variation penalty

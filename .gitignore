@@ -3,7 +3,8 @@
 *.png
 
 # [neural weights]
-*..pkl
+*.pkl
 
 # [python cache]
 *.py~
+*.pyc
