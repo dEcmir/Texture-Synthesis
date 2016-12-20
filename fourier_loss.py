@@ -25,7 +25,7 @@ def define_fourier_loss(tex):
         ortho = tex * np.conj(spectrum)
         projection = ifft2((ortho / np.linalg.norm(ortho)) * spectrum)
         # return the square norm of the difference
-        return np.square(projection - tex).sum()
+        return np.real(np.square(projection - tex).sum())
 
     return loss
 
