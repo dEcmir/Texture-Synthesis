@@ -1,17 +1,17 @@
 
 import lasagne
 import numpy as np
-import skimage.transform
 import scipy
 import PIL.Image
 import sys
+
+import matplotlib.pyplot as plt
 
 import theano
 import theano.tensor as T
 
 from lasagne.utils import floatX
 
-import matplotlib.pyplot as plt
 
 from multiscale import build_model
 
@@ -21,46 +21,11 @@ IMAGE_W = 600
 MEAN_VALUES = np.array([104, 117, 123]).reshape((3,1,1))
 FILTER_SIZES = [3,5,7,11,15,23,37,55]
 def main(path):
-    def prep_image(im):
-        if len(im.shape) == 2:
-            im = im[:, :, np.newaxis]
-            im = np.repeat(im, 3, axis=2)
-        h, w, _ = im.shape
-        if h < w:
-            im = skimage.transform.resize(im, (IMAGE_W, w*IMAGE_W/h), preserve_range=True)
-        else:
-            im = skimage.transform.resize(im, (h*IMAGE_W/w, IMAGE_W), preserve_range=True)
-
-    # Central crop
-        h, w, _ = im.shape
-        im = im[h//2-IMAGE_W//2:h//2+IMAGE_W//2, w//2-IMAGE_W//2:w//2+IMAGE_W//2]
-
-        rawim = np.copy(im).astype('uint8')
-
-    # Shuffle axes to c01
-        im = np.swapaxes(np.swapaxes(im, 1, 2), 0, 1)
-
-    # Convert RGB to BGR
-        im = im[::-1, :, :]
-
-        im = im - MEAN_VALUES
-        return rawim, floatX(im[np.newaxis])
-
-    def deprocess(x):
-        x = np.copy(x[0])
-        x += MEAN_VALUES
-
-        x = x[::-1]
-        x = np.swapaxes(np.swapaxes(x, 0, 1), 1, 2)
-
-        x = np.clip(x, 0, 255).astype('uint8')
-        return x
-
     net = build_model(IMAGE_W)
 
     art = plt.imread(path)
     art = np.array(art)
-    rawim, art = prep_image(art)
+    rawim, art = prep_image(art, MEAN_VALUES, image_w=IMAGE_W)
 
     def gram_matrix(x):
         x = x.flatten(ndim=3)
@@ -141,7 +106,7 @@ def main(path):
         scipy.optimize.fmin_l_bfgs_b(eval_loss, x0.flatten(), fprime=eval_grad, maxfun=40)
         # scipy.optimize.fmin_cg(eval_loss,x0.flatten(), fprime=eval_grad)
         x0 = generated_image.get_value().astype('float64')
-        PIL.Image.fromarray(deprocess(x0)).save(str(i)+".png")
+        PIL.Image.fromarray(deprocess(x0, MEAN_VALUES)).save(str(i)+".png")
 
 if __name__ == '__main__':
     main(sys.argv[1])
