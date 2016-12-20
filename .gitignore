@@ -8,3 +8,9 @@
 # [python cache]
 *.py~
 *.pyc
+
+# Mac OS settings
+*.DS_Store
+
+# pdf docs
+*.pdf
