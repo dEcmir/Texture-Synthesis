@@ -12,7 +12,7 @@ import theano.tensor as T
 
 from lasagne.utils import floatX
 
-from fourier_loss import define_fourier_loss
+from fourier_loss import define_fourier_loss, define_fourier_grad
 from multiscale import build_model
 
 IMAGE_W = 600
@@ -89,6 +89,7 @@ def main(path):
 
     # spectral loss and gradient
     spectral_loss = define_fourier_loss(art[0])
+    spectral_grad = define_fourier_grad(art[0])
 
     # Helper functions to interface with scipy.optimize
     def eval_loss(x0):
@@ -98,9 +99,10 @@ def main(path):
         return f_loss().astype('float64') + s
 
     def eval_grad(x0):
+        s = spectral_grad(x0)
         x0 = floatX(x0.reshape((1, 3, IMAGE_W, IMAGE_W)))
         generated_image.set_value(x0)
-        return np.array(f_grad()).flatten().astype('float64')
+        return np.array(f_grad()).flatten().astype('float64') + s
 
     # Initialize with a noise image
     generated_image.set_value(floatX(np.random.uniform(

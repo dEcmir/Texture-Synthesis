@@ -12,21 +12,21 @@ def define_fourier_loss(tex):
     '''
     # store the fft of the grayscale texture in a variable
     shape = tex.shape
-    tex = (tex[0] + tex[1] + tex[2]) / 3
+    tex =  _gray_bgr(tex)
     tex = fft2(tex)
 
     def spectrum_loss(x0):
         # x0 is the generated texture image
         x0 = x0.reshape(shape)
         # we constrain on the spectrum of the grayscale image
-        x0 = (x0[0] + x0[1] + x0[2]) / 3
+        x0 =  _gray_bgr(x0)
 
         spectrum = fft2(x0)
 
         ortho = tex * np.conj(spectrum)
         projection = ifft2((ortho / np.linalg.norm(ortho)) * spectrum)
         # return the square norm of the difference
-        return np.real(np.square(projection - tex).sum())
+        return 0.5 * np.real(np.square(projection - tex).sum())
 
     return spectrum_loss
 
@@ -43,14 +43,14 @@ def define_fourier_grad(tex):
 
     # store the fft of the grayscale texture in a variable
     shape = tex.shape
-    tex = (tex[0] + tex[1] + tex[2]) / 3
+    tex =  _gray_bgr(tex)
     tex = fft2(tex)
 
     def fourier_grad(x0):
         # x0 is the generated texture image
         x0 = x0.reshape(shape)
         # we constrain on the spectrum of the grayscale image
-        x0 = (x0[0] + x0[1] + x0[2]) / 3
+        x0 = _gray_bgr(x0)
 
         spectrum = fft2(x0)
 
@@ -59,3 +59,7 @@ def define_fourier_grad(tex):
         return x0 - projection
 
     return fourier_grad
+
+
+def _gray_bgr(im):
+    return 0.2989 * im[:, :, 2] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 0]
