@@ -110,7 +110,8 @@ def main(path):
         scipy.optimize.fmin_l_bfgs_b(eval_loss, x0.flatten(), fprime=eval_grad, maxfun=40)
         # scipy.optimize.fmin_cg(eval_loss,x0.flatten(), fprime=eval_grad)
         x0 = generated_image.get_value().astype('float64')
-        PIL.Image.fromarray(deprocess(x0, MEAN_VALUES)).save(str(i)+".png")
+        outpath = path.split('.')[0]
+        PIL.Image.fromarray(deprocess(x0)).save(outpath+str(i)+".png")
 
 if __name__ == '__main__':
     main(sys.argv[1])
