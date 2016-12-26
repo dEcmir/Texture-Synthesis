@@ -23,10 +23,10 @@ def define_fourier_loss(tex):
 
         spectrum = fft2(x0)
 
-        ortho = tex * np.conj(spectrum)
-        projection = ifft2((ortho / np.linalg.norm(ortho)) * spectrum)
+        ortho = spectrum * np.conj(tex)
+        projection = ifft2((ortho / np.linalg.norm(ortho)) * tex)
         # return the square norm of the difference
-        return 0.5 * np.real(np.square(projection - tex).sum())
+        return 0.5 * np.square(np.real(x0 - projection)).sum()
 
     return spectrum_loss
 
@@ -54,12 +54,12 @@ def define_fourier_grad(tex):
 
         spectrum = fft2(x0)
 
-        ortho = tex * np.conj(spectrum)
-        projection = ifft2((ortho / np.linalg.norm(ortho)) * spectrum)
-        return x0 - projection
+        ortho = spectrum * np.conj(tex)
+        projection = ifft2((ortho / np.linalg.norm(ortho)) * tex)
+        return np.real(x0 - projection)
 
     return fourier_grad
 
 
 def _gray_bgr(im):
-    return 0.2989 * im[:, :, 2] + 0.587 * im[:, :, 1] + 0.114 * im[:, :, 0]
+    return 0.2989 * im[2, :, :] + 0.587 * im[1, :, :] + 0.114 * im[0, :, :]

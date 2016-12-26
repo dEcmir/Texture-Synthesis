@@ -1,4 +1,5 @@
 
+import time
 import lasagne
 import numpy as np
 import scipy
@@ -12,6 +13,7 @@ import theano.tensor as T
 
 from lasagne.utils import floatX
 
+from utils import prep_image, deprocess
 from fourier_loss import define_fourier_loss, define_fourier_grad
 from multiscale import build_model
 
@@ -87,22 +89,30 @@ def main(path):
     f_loss = theano.function([], total_loss)
     f_grad = theano.function([], grad)
 
+    spectral_weight = 1e-4
     # spectral loss and gradient
     spectral_loss = define_fourier_loss(art[0])
     spectral_grad = define_fourier_grad(art[0])
 
     # Helper functions to interface with scipy.optimize
     def eval_loss(x0):
-        s = spectral_loss(x0)
+        s = spectral_weight * spectral_loss(x0)
         x0 = floatX(x0.reshape((1, 3, IMAGE_W, IMAGE_W)))
         generated_image.set_value(x0)
-        return f_loss().astype('float64') + s
+        return f_loss().astype('float64') + s.astype('float64')
 
     def eval_grad(x0):
-        s = spectral_grad(x0)
+        # this put the same value for BGR and flatten
+        # s = 1e3 * np.repeat(spectral_grad(x0)[np.newaxis,:,:], 3).flatten() 
+        s = spectral_weight * np.real(spectral_grad(x0))
+	ss = np.empty((1, 3, IMAGE_W, IMAGE_W))
+        ss[0, 0] = s
+        ss[0, 1] = s
+        ss[0, 2] = s
         x0 = floatX(x0.reshape((1, 3, IMAGE_W, IMAGE_W)))
         generated_image.set_value(x0)
-        return np.array(f_grad()).flatten().astype('float64') + s
+        return np.array(f_grad()).flatten().astype('float64') \
+            + ss.flatten().astype('float64')
 
     # Initialize with a noise image
     generated_image.set_value(floatX(np.random.uniform(
@@ -111,19 +121,21 @@ def main(path):
                                                     (1, 3, IMAGE_W, IMAGE_W))))
 
     x0 = generated_image.get_value().astype('float64')
-
+  
+    start = time.time()
     # Optimize, saving the result periodically
     for i in range(8):
         print(i)
-        scipy.optimize.fmin_l_bfgs_b(
+        print time.time()-start
+        _, f, __ = scipy.optimize.fmin_l_bfgs_b(
                                     eval_loss, x0.flatten(),
                                     fprime=eval_grad,
                                     maxfun=40
                                     )
-        # scipy.optimize.fmin_cg(eval_loss,x0.flatten(), fprime=eval_grad)
+        print "function value", f
         x0 = generated_image.get_value().astype('float64')
         outpath = path.split('.')[0]
-        PIL.Image.fromarray(deprocess(x0)).save(outpath+str(i)+".png")
+        PIL.Image.fromarray(deprocess(x0, MEAN_VALUES)).save(outpath+str(i)+".png")
 
 if __name__ == '__main__':
     main(sys.argv[1])
