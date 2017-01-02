@@ -90,6 +90,8 @@ def main(path):
     f_grad = theano.function([], grad)
 
     spectral_weight = 1e-4
+    spectral_weight = 0
+
     # spectral loss and gradient
     spectral_loss = define_fourier_loss(art[0])
     spectral_grad = define_fourier_grad(art[0])
@@ -103,9 +105,9 @@ def main(path):
 
     def eval_grad(x0):
         # this put the same value for BGR and flatten
-        # s = 1e3 * np.repeat(spectral_grad(x0)[np.newaxis,:,:], 3).flatten() 
+        # s = 1e3 * np.repeat(spectral_grad(x0)[np.newaxis,:,:], 3).flatten()
         s = spectral_weight * np.real(spectral_grad(x0))
-	ss = np.empty((1, 3, IMAGE_W, IMAGE_W))
+        ss = np.empty((1, 3, IMAGE_W, IMAGE_W))
         ss[0, 0] = s
         ss[0, 1] = s
         ss[0, 2] = s
@@ -121,7 +123,7 @@ def main(path):
                                                     (1, 3, IMAGE_W, IMAGE_W))))
 
     x0 = generated_image.get_value().astype('float64')
-  
+
     start = time.time()
     # Optimize, saving the result periodically
     for i in range(8):
