@@ -13,6 +13,7 @@ def build_model(image_w, path=None):
     net = {}
     net['input'] = InputLayer((1, 3, image_w, image_w))
     for i in [3,5,7,11,15,23,37,55]:
-        net[str(i)] = ConvLayer(net['input'], 128, i, pad=(i-1)/2)
+        net[str(i)] = ConvLayer(net['input'], 128, i, pad=(i-1)/2,
+                                W=lasagne.init.GlorotNormal())
 
     return net

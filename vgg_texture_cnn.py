@@ -18,7 +18,7 @@ from vgg import build_model
 
 
 def main(path):
-    IMAGE_W = 600
+    IMAGE_W = 256
 
 
     MEAN_VALUES = np.array([104, 117, 123]).reshape((3,1,1))
@@ -141,9 +141,9 @@ def main(path):
     xs = []
     xs.append(x0)
     # Optimize, saving the result periodically
-    for i in range(8):
+    for i in range(15):
         print(i)
-        scipy.optimize.fmin_l_bfgs_b(eval_loss, x0.flatten(), fprime=eval_grad, maxfun=40)
+        scipy.optimize.fmin_l_bfgs_b(eval_loss, x0.flatten(), fprime=eval_grad, m=100, maxfun=40)
         # scipy.optimize.fmin_cg(eval_loss,x0.flatten(), fprime=eval_grad)
         x0 = generated_image.get_value().astype('float64')
         PIL.Image.fromarray(deprocess(x0)).save(path.split('.')[0]+str(i)+".png")
