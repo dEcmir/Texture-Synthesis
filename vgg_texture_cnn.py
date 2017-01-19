@@ -86,7 +86,7 @@ def main(path):
     def total_variation_loss(x):
         return (((x[:,:,:-1,:-1] - x[:,:,1:,:-1])**2 + (x[:,:,:-1,:-1] - x[:,:,:-1,1:])**2)**1.25).sum()
 
-    layers = ['conv4_2', 'conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
+    layers = ['pool4', 'pool3', 'pool2', 'pool1', 'conv1_1']# ['conv4_2', 'conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
     # layers = ['conv1_1', 'conv2_1', 'conv3_1']
     layers = {k: net[k] for k in layers}
 
@@ -107,14 +107,11 @@ def main(path):
     losses = []
 
     # style loss
-    losses.append(0.2e6 * style_loss(art_features, gen_features, 'conv1_1'))
-    losses.append(0.2e6 * style_loss(art_features, gen_features, 'conv2_1'))
-    losses.append(0.2e6 * style_loss(art_features, gen_features, 'conv3_1'))
-    losses.append(0.2e6 * style_loss(art_features, gen_features, 'conv4_1'))
-    losses.append(0.2e6 * style_loss(art_features, gen_features, 'conv5_1'))
+    for lay in layers:
+        losses.append(0.2e6 * style_loss(art_features, gen_features, lay))
 
     # total variation penalty
-    losses.append(0.1e-7 * total_variation_loss(generated_image))
+    losses.append(0.1e-6 * total_variation_loss(generated_image))
 
     total_loss = sum(losses)
     grad = T.grad(total_loss, generated_image)
