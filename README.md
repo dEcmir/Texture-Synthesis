@@ -23,10 +23,17 @@ The following Python packages are required :
  
 ### Organisation
 
- - _vgg.py_ definition of VGG19 using *Lasagne*
+#### Scripts
+
+
+ - _texture_cnn.py_ texture generation using the shallow network
  - _vgg_texture_cnn.py_ implementation of the texture generation using VGG
-
-
+ - _spectrum_texture_cnn.py_	shallow network + spectrum
+ - _spectrum_vgg_texture_cnn_2.py_	vgg network + spectrum
+ - _spectral_texture.py_	variational texture method (for test)
+ 
+ #### Utils
+ - _vgg.py_ definition of VGG19 using *Lasagne*
  - _fourier_loss.py_ definition of the spectral loss
  - _multiscale.py_ definition of a shallow network with different filter sizes using *Lasagne*
  - _texture_cnn.py_ algorithm with both spectral loss and Gram loss 
